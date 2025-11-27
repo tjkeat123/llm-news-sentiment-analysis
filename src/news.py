@@ -1,6 +1,8 @@
 import yfinance as yf
 import json
 
+from .scraper import scrape_yfinance_article
+
 def extract_news_fields(ticker, num_articles=10):
     """Extract specific fields from news articles and return as JSON string"""
     yf_ticker = yf.Ticker(ticker)
@@ -42,3 +44,34 @@ def extract_news_fields(ticker, num_articles=10):
     
     # Return as JSON string
     return json.dumps(result, indent=2)
+
+def merge_important_info_from_json(news_json, importance_json):
+    """Merge the news from the news JSON and the importance JSON"""
+    news_data = json.loads(news_json)
+    importance_data = json.loads(importance_json)
+
+    merged_data = {
+        'ticker': news_data['ticker'],
+        'total_articles': news_data['total_articles'],
+        'articles': []
+    }
+    
+    for idx, article in enumerate(news_data['articles']):
+        importance = importance_data['decisions'][idx]['importance']
+
+        if importance:
+            article_text = scrape_yfinance_article(article['url'])
+        else:
+            article_text = ""
+
+        merged_data['articles'].append({
+            'title': article['title'],
+            'summary': article['summary'],
+            'provider': article['provider'],
+            'editorsPick': article['editorsPick'],
+            'importance': importance,
+            'reason': importance_data['decisions'][idx]['reason'],
+            'article_text': article_text,
+        })
+    
+    return json.dumps(merged_data, indent=2)
