@@ -4,7 +4,7 @@ import json
 from .scraper import scrape_yfinance_article
 
 def extract_news_fields(ticker, num_articles=10):
-    """Extract specific fields from news articles and return as JSON string"""
+    """Extract specific fields from news articles and return as JSON string, if the article is not on Yahoo Finance, the url will be empty"""
     yf_ticker = yf.Ticker(ticker)
     news_list = yf_ticker.get_news(count=num_articles)
     
@@ -18,15 +18,15 @@ def extract_news_fields(ticker, num_articles=10):
         # the returned news is a dictionary with a key 'id' and 'content'
         content = news.get('content', {})
         
-        # Get URL - prefer clickThroughUrl if available, otherwise canonicalUrl
+        # Get URL - the url will be saved in clickThroughURL if the article is on Yahoo Finance,
+        # otherwise the url will be save in canonicalURL (not implemented here)
         click_through = content.get('clickThroughUrl')
-        canonical = content.get('canonicalUrl', {})
         
         # clickThroughUrl could be null, so check if it exists and has a url
         if click_through and click_through.get('url'):
             url = click_through.get('url')
         else:
-            url = canonical.get('url')
+            url = ""
         
         article_data = {
             'id': news.get('id'),
@@ -59,7 +59,7 @@ def merge_important_info_from_json(news_json, importance_json):
     for idx, article in enumerate(news_data['articles']):
         importance = importance_data['decisions'][idx]['importance']
 
-        if importance:
+        if importance and article['url']:
             article_text = scrape_yfinance_article(article['url'])
         else:
             article_text = ""
