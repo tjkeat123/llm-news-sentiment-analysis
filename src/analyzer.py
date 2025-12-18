@@ -1,12 +1,8 @@
 import json
 from .news import extract_news_fields, merge_important_info_from_json
 from .xai import XAI
-from .gemini import Gemini
 
-# Default LLM provider - can be changed to Gemini() if needed
-DEFAULT_LLM = "xai"
-
-def analyze_news(ticker, num_articles=10, verbose=False, llm=None):
+def analyze_news(ticker, num_articles=10, verbose=False):
     """
     Main API function: Fetch news articles for a ticker and analyze their sentiment.
     
@@ -14,7 +10,6 @@ def analyze_news(ticker, num_articles=10, verbose=False, llm=None):
         ticker (str): Stock ticker symbol (e.g., 'AAPL', 'TSLA', 'BTC-USD')
         num_articles (int): Number of articles to fetch and analyze (default: 10)
         verbose (bool): If True, print progress messages (default: False)
-        llm: LLM client instance (XAI or Gemini). If None, uses DEFAULT_LLM setting.
     
     Returns:
         dict: Analysis score JSON with structure:
@@ -37,15 +32,12 @@ def analyze_news(ticker, num_articles=10, verbose=False, llm=None):
     # Step 1: Get news articles
     news_json = extract_news_fields(ticker, num_articles)
     
-    # Step 2: Initialize LLM client if not provided
-    if llm is None:
-        llm = XAI() if DEFAULT_LLM == "xai" else Gemini()
+    # Step 2: Initialize XAI client
+    llm = XAI()
     
-    llm_name = llm.__class__.__name__
-    
-    # Step 3: Analyze with LLM
+    # Step 3: Analyze with XAI
     if verbose:
-        print(f"Analyzing articles with {llm_name}...")
+        print(f"Analyzing articles with XAI Grok...")
     response_json = llm.decide_news_importance(news_json)
     
     # Step 4: Merge news with importance decisions
