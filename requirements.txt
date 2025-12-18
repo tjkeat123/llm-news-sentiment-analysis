@@ -1,4 +1,5 @@
 google-genai==1.52.0
+openai==2.13.0
 pydantic==2.12.4
 python-dotenv==1.2.1
 yfinance==0.2.66
